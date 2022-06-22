@@ -17,6 +17,7 @@ class Settings:
         screen_size = pygame.display.Info()
         self.screen_width = screen_size.current_w
         self.screen_height = screen_size.current_h
+        # screen ratio will be used to scale depending on display size
         self.screen_ratio = self.screen_width / 2560
         self.bg_colour = (0, 0, 0)
         self.orb_speed = 3.5

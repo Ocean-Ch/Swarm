@@ -10,6 +10,7 @@ from enemy import Cloud
 from time import sleep
 from stats import Stats
 from button import Button
+from hud import HUD
 
 
 class FightOrFlight:
@@ -24,6 +25,7 @@ class FightOrFlight:
     bg_colour: tuple[int, int, int]
 
     def __init__(self):
+        """Creates a FOF game object"""
         pygame.init()
         self.clock = pygame.time.Clock()
         self.clock.tick(144)
@@ -32,9 +34,11 @@ class FightOrFlight:
         self.running = False
         self.paused = False
         self.options = False
+        # self.sr is display size relative to 2560 * 1440p monitor
         self.sr = self.settings.screen_ratio
         self.screen = pygame.display.set_mode((self.settings.screen_width,
                                                self.settings.screen_height))
+        self.hud = HUD(self)
         pygame.display.set_caption('Swarm')
         bg = pygame.image.load('images/bg.bmp')
         self.bg = pygame.transform.smoothscale(bg,
@@ -51,7 +55,7 @@ class FightOrFlight:
         self.quit_button = None
 
     def run_game(self) -> None:
-        """Starts the main loop for the game"""
+        """MAIN LOOP"""
         while 1:
             if self.paused:
                 self._check_events()
@@ -71,6 +75,7 @@ class FightOrFlight:
                 self._update_screen()
 
     def start_menu(self):
+        """MAIN METHOD for the start menu. Does not run during game phase."""
         mouse_pos = pygame.mouse.get_pos()
         self.screen.blit(self.bg, (0, 0))
         menu_text = self.get_font_1(int(150 * self.sr)).render("SWARM", True,
@@ -95,6 +100,8 @@ class FightOrFlight:
         self.check_events_menu(mouse_pos)
 
     def check_events_menu(self, mouse_pos):
+        """Method to check any events happening in the main menu.
+        Does not run during game phase."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -123,6 +130,7 @@ class FightOrFlight:
                 self._check_mouse_events(event)
 
     def _spawn_enemies(self):
+        """Spawns enemies over a given time period"""
         cd = random.randint(self.settings.cloud_cooldown_min,
                             self.settings.cloud_cooldown)
         now = pygame.time.get_ticks()
@@ -133,16 +141,25 @@ class FightOrFlight:
             self.last_enemy_spawn = now
 
     def laser_collisions(self):
+        """Tracks when any object from the laser group intereacts with an object
+        of the enemy group"""
         collisions = pygame.sprite.groupcollide(self.enemies, self.lasers,
                                                 False, True)
         for enemy in collisions:
+            # Deduct one health point
             enemy.hp -= 1
             if enemy.hp <= 0:
-                self.stats.kills += 1
+                self.stats.score += 100
                 enemy.kill()
+        for laser in self.lasers.sprites():
+            if -20 > laser.x > self.settings.screen_width + 50 or \
+                    -10 > laser.y > self.settings.screen_height:
+                laser.kill()
 
     def orb_collisions(self):
+        """Tracks if any enemies touch the orb"""
         for enemy in self.enemies:
+            # Ratio 0.6 because orb rect is much larger
             if pygame.sprite.collide_rect_ratio(0.60)(self.orb, enemy):
                 death_text = \
                     self.get_font_1(int(150 * self.sr)).render("DEATH", True,
@@ -151,8 +168,10 @@ class FightOrFlight:
                     center=(self.settings.screen_width // 2,
                             self.settings.screen_height // 2))
                 self.screen.blit(death_text, death_rect)
+                # Updates only the death rectangle of the display
                 pygame.display.update(death_rect)
-                sleep(2)
+                # Pauses game for 1.5 seconds
+                sleep(1.5)
                 self.enemies.empty()
                 self.stats.reset()
                 self.orb.reset_movement()
@@ -162,15 +181,15 @@ class FightOrFlight:
         """Updates images to the screen"""
         # Fill in display colour after each pass of the loop
         self.crosshair.update_crosshair()
-
+        # Blit background photo onto display screen
         self.screen.blit(self.bg, (0, 0))
         self.orb.blitme()
-        for laser in self.lasers.sprites():
-            if -10 > laser.x > self.settings.screen_width + 100 or \
-                    -10 > laser.y > self.settings.screen_height:
-                laser.kill()
+
+        pygame.draw.rect(self.screen, (0, 255, 255), self.hud.score_rect)
+        # Draws lasers and enemies (if any)
         self.lasers.draw(self.screen)
         self.enemies.draw(self.screen)
+        self.hud.show_score()
         # Makes recently created screen visible
         # pygame.draw.rect(self.screen, (0, 0, 255), self.orb.rect)
         self.crosshair.blitme()
@@ -185,6 +204,7 @@ class FightOrFlight:
                 self.running = True
 
     def _check_keydown_events(self, event):
+        """Private method to check which keys have been pressed"""
         if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
             # Move right
             self.orb.moving_right = True
@@ -209,10 +229,12 @@ class FightOrFlight:
             self.paused = not self.paused
 
     def _fire_bullet(self):
+        """Instantiates a laser object and adds it to the laser group"""
         new_laser = Laser(self)
         self.lasers.add(new_laser)
 
     def _check_keyup_events(self, event):
+        """Checks when player releases any keys"""
         if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
             self.orb.moving_right = False
             # self.orb.last_pressed.remove(1)
@@ -230,6 +252,7 @@ class FightOrFlight:
             # self.orb.last_pressed.remove(4)
 
     def get_font_1(self, size):
+        """Alien space theme font"""
         return pygame.font.Font("assets/Organ.ttf", size)
 
 

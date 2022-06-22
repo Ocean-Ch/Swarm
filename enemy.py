@@ -8,6 +8,7 @@ from settings import Settings
 
 class Cloud(Sprite):
     def __init__(self, fof_game):
+        """Initializes cloud object"""
         super().__init__()
         self.screen = fof_game.screen
         self.settings = Settings()
@@ -23,29 +24,36 @@ class Cloud(Sprite):
             pygame.transform.smoothscale(image, (int(70 * sr), int(97 * sr)))
         self.rect = self.image.get_rect()
 
+        # Min/max points where enemies can spawn
         spawn_min_x = -20
         spawn_max_x = self.settings.screen_width + 20
         spawn_min_y = -20
         spawn_max_y = self.settings.screen_height + 20
-
+        # Below will determine where enemy will spawn (anywhere on the border)
         side = random.choice([1, 2, 3, 4])
         if side == 1:
+            # Spawn on the top
             self.rect.center = (random.choice(range(spawn_min_x, spawn_max_x)),
                                 spawn_min_y)
         elif side == 2:
+            # Spawn at bottom
             self.rect.center = (random.choice(range(spawn_min_x, spawn_max_x)),
                                 spawn_max_y)
         elif side == 3:
+            # Spawn on left
             self.rect.center = (spawn_min_x,
                                 random.choice(range(spawn_min_y, spawn_max_y)))
         else:
+            # Spawn on right
             self.rect.center = (spawn_max_x,
                                 random.choice(range(spawn_min_y, spawn_max_y)))
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
     def update(self):
+        """Updates movement for this cloud (Decides which direction to go)."""
         now = pygame.time.get_ticks()
+        # Makes a chance decision every 15 ms (20% chance of moving towards orb)
         if now - self.last_moved > 15:
             self.foo = random.randint(0, 100)
             self.last_moved = now
@@ -65,7 +73,8 @@ class Cloud(Sprite):
         self.rect.y = self.y
 
     def _calculate_proj_vector(self) -> tuple[float, float]:
-        """Get resulting vector RELATIVE to orb"""
+        """Gets the vector towards orb (Normalized according to desired
+        magnitude). Magnitude of the vector in this case is the speed or enemy."""
         location = self.orb.rect.center
         resultant = (location[0] - self.rect.center[0],
                      location[1] - self.rect.center[1])
