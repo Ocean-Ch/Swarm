@@ -15,6 +15,7 @@ class Cloud(Sprite):
         self.speed = self.settings.cloud_speed
         self.foo = 0
         self.last_moved = 0
+        self.hp = 1
         sr = self.settings.screen_ratio
 
         image = pygame.image.load('images/enemy.bmp')
