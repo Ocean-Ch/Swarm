@@ -83,6 +83,13 @@ class Orb:
     def _stop_blinking(self):
         self.settings.orb_speed -= self.settings.blink_speed
 
+    def reset_movement(self):
+        self.moving_up = False
+        self.moving_down = False
+        self.moving_left = False
+        self.moving_right = False
+        self.rect.center = self.screen_rect.center
+
     def blitme(self):
         """Draw the ship at its current location"""
         self.screen.blit(self.image, self.rect)

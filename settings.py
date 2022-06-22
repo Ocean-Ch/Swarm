@@ -27,7 +27,7 @@ class Settings:
         self.cloud_speed = 5
         self.cloud_cooldown = 1600
         self.cloud_cooldown_min = 400
-        self.max_enemies = 50
+        self.max_enemies = 69
 
 
 class Crosshair:

@@ -30,12 +30,12 @@ class FightOrFlight:
         self.settings = Settings()
         self.stats = Stats(self)
         self.running = False
+        self.paused = False
         self.options = False
         self.sr = self.settings.screen_ratio
-
         self.screen = pygame.display.set_mode((self.settings.screen_width,
                                                self.settings.screen_height))
-        pygame.display.set_caption('FightOrFlight')
+        pygame.display.set_caption('Swarm')
         bg = pygame.image.load('images/bg.bmp')
         self.bg = pygame.transform.smoothscale(bg,
                                                (self.settings.screen_width,
@@ -53,13 +53,14 @@ class FightOrFlight:
     def run_game(self) -> None:
         """Starts the main loop for the game"""
         while 1:
-            if not self.running:
-                pygame.display.set_caption("Main Menu")
+            if self.paused:
+                self._check_events()
+            elif not self.running:
+                pygame.mouse.set_visible(True)
                 self.start_menu()
             else:
                 pygame.mouse.set_visible(False)
                 self.screen.fill("black")
-                pygame.display.set_caption("Swarm")
                 self._check_events()
                 self.orb.update()
                 self.lasers.update()
@@ -77,13 +78,13 @@ class FightOrFlight:
         menu_rect = menu_text.get_rect(
             center=(self.settings.screen_width // 2, int(250 * self.sr)))
 
-        self.play_button = Button(None, (self.settings.screen_width//2,
+        self.play_button = Button(None, (self.settings.screen_width // 2,
                                          int(500 * self.sr)), "PLAY",
                                   self.get_font_1(75), "#d7fcd4", "White")
         self.options_button = \
-            Button(None, (self.settings.screen_width//2, int(700 * self.sr)),
+            Button(None, (self.settings.screen_width // 2, int(700 * self.sr)),
                    "OPTIONS", self.get_font_1(75), "#d7fcd4", "White")
-        self.quit_button = Button(None, (self.settings.screen_width//2,
+        self.quit_button = Button(None, (self.settings.screen_width // 2,
                                          int(900 * self.sr)), "QUIT",
                                   self.get_font_1(75), "#d7fcd4", "White")
         self.screen.blit(menu_text, menu_rect)
@@ -143,9 +144,18 @@ class FightOrFlight:
     def orb_collisions(self):
         for enemy in self.enemies:
             if pygame.sprite.collide_rect_ratio(0.60)(self.orb, enemy):
+                death_text = \
+                    self.get_font_1(int(150 * self.sr)).render("DEATH", True,
+                                                               "red")
+                death_rect = death_text.get_rect(
+                    center=(self.settings.screen_width // 2,
+                            self.settings.screen_height // 2))
+                self.screen.blit(death_text, death_rect)
+                pygame.display.update(death_rect)
                 sleep(2)
                 self.enemies.empty()
                 self.stats.reset()
+                self.orb.reset_movement()
                 self.running = False
 
     def _update_screen(self):
@@ -196,7 +206,7 @@ class FightOrFlight:
         elif event.key == pygame.K_k:
             self._fire_bullet()
         elif event.key == pygame.K_ESCAPE:
-            sys.exit()
+            self.paused = not self.paused
 
     def _fire_bullet(self):
         new_laser = Laser(self)
