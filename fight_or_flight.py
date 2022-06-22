@@ -44,6 +44,13 @@ class FightOrFlight:
         self.bg = pygame.transform.smoothscale(bg,
                                                (self.settings.screen_width,
                                                 self.settings.screen_height))
+        pause_img = pygame.image.load('images/paused.bmp')
+        self.pause_img = pygame.transform.smoothscale(pause_img,
+                                                      (int(400 * self.sr),
+                                                       int(208 * self.sr)))
+        self.pause_rect = self.pause_img.get_rect(
+            center=(self.settings.screen_width//2,
+                    self.settings.screen_height//2))
         self.orb = Orb(self)
         self.lasers = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
@@ -59,6 +66,7 @@ class FightOrFlight:
         while 1:
             if self.paused:
                 self._check_events()
+                self.display_pause()
             elif not self.running:
                 pygame.mouse.set_visible(True)
                 self.start_menu()
@@ -81,16 +89,16 @@ class FightOrFlight:
         menu_text = self.get_font_1(int(150 * self.sr)).render("SWARM", True,
                                                                "#b68f40")
         menu_rect = menu_text.get_rect(
-            center=(self.settings.screen_width // 2, int(250 * self.sr)))
+            center=(self.settings.screen_width // 2, int(300 * self.sr)))
 
         self.play_button = Button(None, (self.settings.screen_width // 2,
-                                         int(500 * self.sr)), "PLAY",
+                                         int(700 * self.sr)), "PLAY",
                                   self.get_font_1(75), "#d7fcd4", "White")
         self.options_button = \
-            Button(None, (self.settings.screen_width // 2, int(700 * self.sr)),
+            Button(None, (self.settings.screen_width // 2, int(900 * self.sr)),
                    "OPTIONS", self.get_font_1(75), "#d7fcd4", "White")
         self.quit_button = Button(None, (self.settings.screen_width // 2,
-                                         int(900 * self.sr)), "QUIT",
+                                         int(1100 * self.sr)), "QUIT",
                                   self.get_font_1(75), "#d7fcd4", "White")
         self.screen.blit(menu_text, menu_rect)
 
@@ -149,8 +157,9 @@ class FightOrFlight:
             # Deduct one health point
             enemy.hp -= 1
             if enemy.hp <= 0:
-                self.stats.score += 100
+                self.stats.score += 10
                 enemy.kill()
+                self.hud.update_score()
         for laser in self.lasers.sprites():
             if -20 > laser.x > self.settings.screen_width + 50 or \
                     -10 > laser.y > self.settings.screen_height:
@@ -185,7 +194,7 @@ class FightOrFlight:
         self.screen.blit(self.bg, (0, 0))
         self.orb.blitme()
 
-        pygame.draw.rect(self.screen, (0, 255, 255), self.hud.score_rect)
+        # pygame.draw.rect(self.screen, (0, 255, 255), self.hud.score_rect)
         # Draws lasers and enemies (if any)
         self.lasers.draw(self.screen)
         self.enemies.draw(self.screen)
@@ -251,9 +260,17 @@ class FightOrFlight:
             self.orb.moving_down = False
             # self.orb.last_pressed.remove(4)
 
+    def display_pause(self):
+        self.screen.blit(self.pause_img, self.pause_rect)
+        pygame.display.update(self.pause_rect)
+
     def get_font_1(self, size):
         """Alien space theme font"""
         return pygame.font.Font("assets/Organ.ttf", size)
+
+    def get_font_2(self, size):
+        """Alien space theme font"""
+        return pygame.font.Font("assets/slkscr.ttf", size)
 
 
 if __name__ == "__main__":
