@@ -135,7 +135,7 @@ class Red(Enemy):
         if now - self.last_moved > 1000:
             self.direction = self._calculate_proj_vector()
             self.last_moved = now
-        if not (now - self.last_moved > 200):
+        if not (now - self.last_moved > 100):
             self.x += self.direction[0]
             self.y += self.direction[1]
         self.rect.x = self.x

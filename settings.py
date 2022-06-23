@@ -22,7 +22,7 @@ class Settings:
         self.bg_colour = (0, 0, 0)
         self.orb_speed = 3.5
         self.blink_speed = 30
-        self.blink_time = 15
+        self.blink_time = 13
         self.rotation_speed = 75
         self.laser_speed = 30
         self.cloud_speed = 5
