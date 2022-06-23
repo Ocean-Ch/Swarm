@@ -132,10 +132,10 @@ class Red(Enemy):
         """Updates movement for this cloud (Decides which direction to go)."""
         now = pygame.time.get_ticks()
         # Makes a chance decision every 15 ms (20% chance of moving towards orb)
-        if now - self.last_moved > 1500:
+        if now - self.last_moved > 1000:
             self.direction = self._calculate_proj_vector()
             self.last_moved = now
-        if not (now - self.last_moved > 1000):
+        if not (now - self.last_moved > 200):
             self.x += self.direction[0]
             self.y += self.direction[1]
         self.rect.x = self.x

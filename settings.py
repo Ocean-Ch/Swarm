@@ -26,7 +26,7 @@ class Settings:
         self.rotation_speed = 75
         self.laser_speed = 30
         self.cloud_speed = 5
-        self.red_speed = 15
+        self.red_speed = 30
         self.cloud_cooldown = 1600
         self.cloud_cooldown_min = 400
         self.red_cooldown = 150000
