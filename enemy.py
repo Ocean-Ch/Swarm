@@ -6,24 +6,23 @@ from pygame.sprite import Sprite
 from settings import Settings
 
 
-class Cloud(Sprite):
+class Enemy(Sprite):
+    """Abstract class for all enemies
+    === NOT TO BE INSTANTIATED ==="""
     def __init__(self, fof_game):
-        """Initializes cloud object"""
         super().__init__()
         self.screen = fof_game.screen
         self.settings = Settings()
+        self.sr = self.settings.screen_ratio
         self.orb = fof_game.orb
-        self.speed = self.settings.cloud_speed
-        self.foo = 0
         self.last_moved = 0
-        self.hp = 1
-        sr = self.settings.screen_ratio
+        self.rect = None
+        self.image = None
+        self.x = None
+        self.y = None
+        self.speed = None
 
-        image = pygame.image.load('images/enemy.bmp')
-        self.image = \
-            pygame.transform.smoothscale(image, (int(70 * sr), int(97 * sr)))
-        self.rect = self.image.get_rect()
-
+    def spawn(self):
         # Min/max points where enemies can spawn
         spawn_min_x = -20
         spawn_max_x = self.settings.screen_width + 20
@@ -50,6 +49,42 @@ class Cloud(Sprite):
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
+    def update(self) -> None:
+        raise NotImplementedError
+
+    def _calculate_proj_vector(self) -> tuple[float, float]:
+        """Gets the vector towards orb (Normalized according to desired
+        magnitude). Magnitude of the vector in this case is the speed or enemy."""
+        location = self.orb.rect.center
+        resultant = (location[0] - self.rect.center[0],
+                     location[1] - self.rect.center[1])
+        # HANDLE ZERO DIVISION ERROR
+        if resultant[0] == 0:
+            resultant = (0.01, resultant[1])
+        slope = resultant[1] / resultant[0]
+        x_dir = math.sqrt(self.speed ** 2 / (1 + slope ** 2))
+        if resultant[0] < 0:
+            x_dir *= -1
+        y_dir = x_dir * slope
+        return x_dir, y_dir
+
+
+class Cloud(Enemy):
+    def __init__(self, fof_game):
+        """Initializes cloud object"""
+        super().__init__(fof_game)
+        self.speed = self.settings.cloud_speed
+        self.foo = 0
+        self.hp = 1
+
+        image = pygame.image.load('images/enemy.bmp')
+        self.image = \
+            pygame.transform.smoothscale(image, (int(70 * self.sr),
+                                                 int(97 * self.sr)))
+        self.rect = self.image.get_rect()
+
+        self.spawn()
+
     def update(self):
         """Updates movement for this cloud (Decides which direction to go)."""
         now = pygame.time.get_ticks()
@@ -72,18 +107,34 @@ class Cloud(Sprite):
         self.rect.x = self.x
         self.rect.y = self.y
 
-    def _calculate_proj_vector(self) -> tuple[float, float]:
-        """Gets the vector towards orb (Normalized according to desired
-        magnitude). Magnitude of the vector in this case is the speed or enemy."""
-        location = self.orb.rect.center
-        resultant = (location[0] - self.rect.center[0],
-                     location[1] - self.rect.center[1])
-        # HANDLE ZERO DIVISION ERROR
-        if resultant[0] == 0:
-            resultant = (0.01, resultant[1])
-        slope = resultant[1] / resultant[0]
-        x_dir = math.sqrt(self.speed ** 2 / (1 + slope ** 2))
-        if resultant[0] < 0:
-            x_dir *= -1
-        y_dir = x_dir * slope
-        return x_dir, y_dir
+
+class Red(Enemy):
+    def __init__(self, fof_game):
+        """Initializes cloud object"""
+        super().__init__(fof_game)
+
+        self.speed = self.settings.cloud_speed
+        self.last_moved = 0
+        self.hp = 25
+        self.direction = (0, 0)
+
+        image = pygame.image.load('images/enemy.bmp')
+        self.image = \
+            pygame.transform.smoothscale(image, (int(70 * self.sr),
+                                                 int(97 * self.sr)))
+        self.rect = self.image.get_rect()
+
+        self.spawn()
+
+    def update(self):
+        """Updates movement for this cloud (Decides which direction to go)."""
+        now = pygame.time.get_ticks()
+        # Makes a chance decision every 15 ms (20% chance of moving towards orb)
+        if now - self.last_moved > 15:
+            self.direction = self._calculate_proj_vector()
+            self.last_moved = now
+        self.x += self.direction[0]
+        self.y += self.direction[1]
+        self.rect.x = self.x
+        self.rect.y = self.y
+
