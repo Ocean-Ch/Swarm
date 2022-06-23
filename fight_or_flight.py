@@ -119,6 +119,7 @@ class FightOrFlight:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.play_button.checkForInput(mouse_pos):
                     self.running = True
+                    self.reset_game()
                 if self.options_button.checkForInput(mouse_pos):
                     self.options = True
                 if self.quit_button.checkForInput(mouse_pos):
@@ -277,6 +278,12 @@ class FightOrFlight:
     def display_pause(self):
         self.screen.blit(self.pause_img, self.pause_rect)
         pygame.display.update(self.pause_rect)
+
+    def reset_game(self):
+        self.stats.reset()
+        self.clock = pygame.time.Clock()
+        self.clock.tick(144)
+        self.first_red = False
 
     def get_font_1(self, size):
         """Alien space theme font"""
