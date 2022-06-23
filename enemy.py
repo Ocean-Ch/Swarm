@@ -54,7 +54,8 @@ class Enemy(Sprite):
 
     def _calculate_proj_vector(self) -> tuple[float, float]:
         """Gets the vector towards orb (Normalized according to desired
-        magnitude). Magnitude of the vector in this case is the speed or enemy."""
+        magnitude). Magnitude of the vector in this case is the speed or enemy.
+        """
         location = self.orb.rect.center
         resultant = (location[0] - self.rect.center[0],
                      location[1] - self.rect.center[1])
@@ -113,16 +114,17 @@ class Red(Enemy):
         """Initializes cloud object"""
         super().__init__(fof_game)
 
-        self.speed = self.settings.cloud_speed
+        self.speed = self.settings.red_speed
         self.last_moved = 0
         self.hp = 25
         self.direction = (0, 0)
 
-        image = pygame.image.load('images/enemy.bmp')
+        image = pygame.image.load('images/red.bmp')
         self.image = \
-            pygame.transform.smoothscale(image, (int(70 * self.sr),
-                                                 int(97 * self.sr)))
+            pygame.transform.smoothscale(image, (int(150 * self.sr),
+                                                 int(150 * self.sr)))
         self.rect = self.image.get_rect()
+        self.last_rotated = 0
 
         self.spawn()
 
@@ -130,11 +132,14 @@ class Red(Enemy):
         """Updates movement for this cloud (Decides which direction to go)."""
         now = pygame.time.get_ticks()
         # Makes a chance decision every 15 ms (20% chance of moving towards orb)
-        if now - self.last_moved > 15:
+        if now - self.last_moved > 1500:
             self.direction = self._calculate_proj_vector()
             self.last_moved = now
-        self.x += self.direction[0]
-        self.y += self.direction[1]
+        if not (now - self.last_moved > 1000):
+            self.x += self.direction[0]
+            self.y += self.direction[1]
         self.rect.x = self.x
         self.rect.y = self.y
-
+        if now - self.last_rotated > 150:
+            self.image = pygame.transform.rotate(self.image, 90)
+            self.last_rotated = now

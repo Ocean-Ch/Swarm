@@ -6,13 +6,13 @@ import pygame
 from settings import Settings, Crosshair
 from orb import Orb
 from laser import Laser
-from enemy import Cloud
+from enemy import Cloud, Red
 from time import sleep
 from stats import Stats
 from button import Button
 from hud import HUD
 
-
+# TODO reset game clock everytime game starts
 class FightOrFlight:
     """Managing assets/behaviour
     === Attributes ===
@@ -34,6 +34,7 @@ class FightOrFlight:
         self.running = False
         self.paused = False
         self.options = False
+        self.first_red = False
         # self.sr is display size relative to 2560 * 1440p monitor
         self.sr = self.settings.screen_ratio
         self.screen = pygame.display.set_mode((self.settings.screen_width,
@@ -49,12 +50,13 @@ class FightOrFlight:
                                                       (int(400 * self.sr),
                                                        int(208 * self.sr)))
         self.pause_rect = self.pause_img.get_rect(
-            center=(self.settings.screen_width//2,
-                    self.settings.screen_height//2))
+            center=(self.settings.screen_width // 2,
+                    self.settings.screen_height // 2))
         self.orb = Orb(self)
         self.lasers = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
-        self.last_enemy_spawn = 0
+        self.last_cloud_spawn = 0
+        self.last_red_spawn = 0
         self._spawn_enemies()
         self.crosshair = Crosshair(self)
         self.play_button = None
@@ -139,14 +141,23 @@ class FightOrFlight:
 
     def _spawn_enemies(self):
         """Spawns enemies over a given time period"""
-        cd = random.randint(self.settings.cloud_cooldown_min,
-                            self.settings.cloud_cooldown)
+        cd_cloud = random.randint(self.settings.cloud_cooldown_min,
+                                  self.settings.cloud_cooldown)
+        cd_red = random.randint(self.settings.red_cooldown_min,
+                                self.settings.red_cooldown)
         now = pygame.time.get_ticks()
-        if now - self.last_enemy_spawn > cd \
+        if now - self.last_cloud_spawn > cd_cloud \
                 and len(self.enemies) < self.settings.max_enemies:
             enemy = Cloud(self)
             self.enemies.add(enemy)
-            self.last_enemy_spawn = now
+            self.last_cloud_spawn = now
+        if not self.first_red and self.stats.score >= 690:
+            self.enemies.add(Red(self))
+            self.last_red_spawn = now
+            self.first_red = True
+        if now - self.last_red_spawn > cd_red:
+            self.enemies.add(Red(self))
+            self.last_red_spawn = now
 
     def laser_collisions(self):
         """Tracks when any object from the laser group intereacts with an object
@@ -157,7 +168,10 @@ class FightOrFlight:
             # Deduct one health point
             enemy.hp -= 1
             if enemy.hp <= 0:
-                self.stats.score += 10
+                if isinstance(enemy, Cloud):
+                    self.stats.score += 10
+                elif isinstance(enemy, Red):
+                    self.stats.score += 500
                 enemy.kill()
                 self.hud.update_score()
         for laser in self.lasers.sprites():

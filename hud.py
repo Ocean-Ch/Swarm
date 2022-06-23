@@ -1,4 +1,3 @@
-from stats import Stats
 
 
 class HUD:
