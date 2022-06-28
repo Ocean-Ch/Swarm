@@ -80,8 +80,8 @@ class Cloud(Enemy):
 
         image = pygame.image.load('images/enemy.bmp')
         self.image = \
-            pygame.transform.smoothscale(image, (int(70 * self.sr),
-                                                 int(97 * self.sr)))
+            pygame.transform.smoothscale(image, (int(65 * self.sr),
+                                                 int(90 * self.sr)))
         self.rect = self.image.get_rect()
 
         self.spawn()
@@ -116,7 +116,7 @@ class Red(Enemy):
 
         self.speed = self.settings.red_speed
         self.last_moved = 0
-        self.hp = 25
+        self.hp = 20
         self.direction = (0, 0)
 
         image = pygame.image.load('images/red.bmp')
@@ -135,7 +135,7 @@ class Red(Enemy):
         if now - self.last_moved > 1000:
             self.direction = self._calculate_proj_vector()
             self.last_moved = now
-        if not (now - self.last_moved > 100):
+        if 150 < now - self.last_moved < 300:
             self.x += self.direction[0]
             self.y += self.direction[1]
         self.rect.x = self.x

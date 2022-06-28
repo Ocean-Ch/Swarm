@@ -12,7 +12,7 @@ from stats import Stats
 from button import Button
 from hud import HUD
 
-# TODO reset game clock everytime game starts
+# TODO Start game with orb in the center
 class FightOrFlight:
     """Managing assets/behaviour
     === Attributes ===
@@ -280,6 +280,8 @@ class FightOrFlight:
         pygame.display.update(self.pause_rect)
 
     def reset_game(self):
+        self.orb.rect.center = (self.settings.screen_width // 2,
+                                self.settings.screen_height // 2)
         self.stats.reset()
         self.clock = pygame.time.Clock()
         self.clock.tick(144)

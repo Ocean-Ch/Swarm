@@ -20,7 +20,7 @@ class Settings:
         # screen ratio will be used to scale depending on display size
         self.screen_ratio = self.screen_width / 2560
         self.bg_colour = (0, 0, 0)
-        self.orb_speed = 3.5
+        self.orb_speed = 4
         self.blink_speed = 30
         self.blink_time = 13
         self.rotation_speed = 75

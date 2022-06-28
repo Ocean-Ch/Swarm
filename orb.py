@@ -27,7 +27,7 @@ class Orb:
         # load the ship image and get its rect
         image = pygame.image.load('images/orb.bmp')
         self.image = \
-            pygame.transform.smoothscale(image, (int(100 * sr), int(100 * sr)))
+            pygame.transform.smoothscale(image, (int(80 * sr), int(80 * sr)))
         self.rect = self.image.get_rect()
         self.rect.center = self.screen_rect.center
         self.x = float(self.rect.x)
